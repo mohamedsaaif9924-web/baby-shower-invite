@@ -94,10 +94,76 @@
       transform: translateY(0) scale(1);
     }
 
-    /* 4. Google Maps Wobbling Button */
+    /* 4. Countdown Timer & Target Date Display */
+    .timer-container {
+      margin-top: 20px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 18px 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .event-datetime-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .timer-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #f72585;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .timer-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .timer-box {
+      flex: 1;
+      background: linear-gradient(135deg, #fce7f3, #e0f2fe);
+      border-radius: 12px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .timer-box span {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1;
+    }
+
+    .timer-box label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* 5. Google Maps Wobbling Button */
     .maps-link {
       display: inline-block;
-      margin-top: 20px;
+      margin-top: 18px;
       background: linear-gradient(135deg, #2c7a9e, #1b6888);
       color: #ffffff;
       padding: 14px 30px;
@@ -124,7 +190,7 @@
       75% { transform: rotate(-1deg); }
     }
 
-    /* 5. Fireworks Canvas */
+    /* 6. Fireworks Canvas */
     canvas {
       position: fixed;
       top: 0;
@@ -160,6 +226,23 @@
       <img src="https://i.imgur.com/PJROj9R.jpg" alt="Mercy and Anand Baby Shower Invitation">
     </div>
 
+    <!-- Countdown Timer Section -->
+    <div class="timer-container">
+      <!-- Target Event Day & Time Display -->
+      <div class="event-datetime-badge">
+        📅 <span id="event-display-text">Thursday, Aug 20, 2026 at 11:30 PM IST</span>
+      </div>
+
+      <div class="timer-title" id="timer-heading">Time Remaining</div>
+
+      <div class="timer-grid" id="timer-content">
+        <div class="timer-box"><span id="days">00</span><label>Days</label></div>
+        <div class="timer-box"><span id="hours">00</span><label>Hours</label></div>
+        <div class="timer-box"><span id="minutes">00</span><label>Mins</label></div>
+        <div class="timer-box"><span id="seconds">00</span><label>Secs</label></div>
+      </div>
+    </div>
+
     <!-- Google Maps Exact Location Link -->
     <a href="https://maps.app.goo.gl/fU8AsgGFy9ZFWq8q7" target="_blank" class="maps-link">
       📍 View Location on Google Maps
@@ -167,17 +250,52 @@
   </div>
 
   <script>
+    // --- TIMER CONFIGURATION ---
+    // Target date: August 20, 2026 at 11:30 PM IST (+05:30)
+    const eventTarget = new Date('2026-08-20T23:30:00+05:30');
+    const eventTime = eventTarget.getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = eventTime - now;
+
+      if (difference <= 0) {
+        document.getElementById('timer-heading').innerText = "🎉 Celebration is Happening Today! 🎉";
+        document.getElementById('timer-content').style.display = "none";
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      document.getElementById('days').innerText = String(days).padStart(2, '0');
+      document.getElementById('hours').innerText = String(hours).padStart(2, '0');
+      document.getElementById('minutes').innerText = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').innerText = String(seconds).padStart(2, '0');
+    }
+
+    // Run countdown every second
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // --- AUDIO & HAPTICS ---
     let activeFireworks = false;
     let audioCtx = null;
 
-    // Initialize Web Audio API on first user interaction (browser policy compliant)
+    function triggerHaptic(pattern) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate(pattern);
+      }
+    }
+
     function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
     }
 
-    // Play a magical opening chime sound on click
     function playOpeningChime() {
       if (!audioCtx) return;
       
@@ -202,13 +320,10 @@
       });
     }
 
-    // Play soft pop/burst sound for individual fireworks
     function playFireworkSound() {
       if (!audioCtx) return;
 
       const now = audioCtx.currentTime;
-      
-      // Tone Pop
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
@@ -228,28 +343,24 @@
     }
 
     function openInvitation() {
-      // Audio needs user interaction to start
       initAudio();
       playOpeningChime();
+      triggerHaptic([50, 30, 50, 30, 120]);
 
       const banner = document.getElementById('banner-container');
       const card = document.getElementById('invitation-card');
       const canvas = document.getElementById('fireworks');
 
-      // Hide the banner
       banner.classList.add('active');
-
-      // Start fireworks
       canvas.classList.add('active');
       activeFireworks = true;
 
-      // Reveal invitation card
       setTimeout(() => {
         card.classList.add('reveal');
       }, 200);
     }
 
-    // Fireworks Code
+    // --- FIREWORKS CANVAS ---
     const canvas = document.getElementById('fireworks');
     const ctx = canvas.getContext('2d');
 
@@ -301,8 +412,8 @@
       const y = Math.random() * (canvas.height * 0.6);
       const color = colors[Math.floor(Math.random() * colors.length)];
 
-      // Play soft firework sound effect
       playFireworkSound();
+      triggerHaptic(15);
 
       for (let i = 0; i < 40; i++) {
         particles.push(new Particle(x, y, color));
