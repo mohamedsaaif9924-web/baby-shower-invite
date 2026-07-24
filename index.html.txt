@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Baby Shower Invitation - Mercy & Anand</title>
+  <style>
+    /* 1. Global Setup */
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0f172a; /* Dark background so fireworks pop */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      box-sizing: border-box;
+    }
+
+    /* 2. Centered "You are Invited" Banner Setup */
+    #banner-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+    }
+
+    .invite-banner {
+      background: linear-gradient(135deg, #ff85a1, #f72585);
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 22px 25px;
+      border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5), 0 0 15px rgba(255, 133, 161, 0.8);
+      border: 3px solid #ffffff;
+      letter-spacing: 0.5px;
+      animation: pulseBanner 2s infinite ease-in-out;
+    }
+
+    /* Pulsating banner effect */
+    @keyframes pulseBanner {
+      0%, 100% { transform: scale(1); box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5); }
+      50% { transform: scale(1.06); box-shadow: 0 15px 40px rgba(247, 37, 133, 0.8); }
+    }
+
+    /* Banner disappear animation */
+    #banner-container.active {
+      transform: translate(-50%, -150%) scale(0.3);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* 3. Invitation Card (Hidden initially) */
+    .card-container {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      opacity: 0;
+      transform: translateY(40px) scale(0.95);
+      transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      width: 100%;
+    }
+
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Card reveal state */
+    .card-container.reveal {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* 4. Google Maps Wobbling Button */
+    .maps-link {
+      display: inline-block;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #2c7a9e, #1b6888);
+      color: #ffffff;
+      padding: 14px 30px;
+      text-decoration: none;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 16px;
+      box-shadow: 0 6px 15px rgba(44, 122, 158, 0.4);
+      animation: wobbleButton 2.5s infinite ease-in-out;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .maps-link:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(44, 122, 158, 0.6);
+    }
+
+    @keyframes wobbleButton {
+      0%, 100% { transform: rotate(0deg); }
+      15% { transform: rotate(-3deg); }
+      30% { transform: rotate(3deg); }
+      45% { transform: rotate(-2deg); }
+      60% { transform: rotate(2deg); }
+      75% { transform: rotate(-1deg); }
+    }
+
+    /* 5. Fireworks Canvas */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    canvas.active {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fireworks Background -->
+  <canvas id="fireworks"></canvas>
+
+  <!-- Centered Interactive Banner -->
+  <div id="banner-container" onclick="openInvitation()">
+    <div class="invite-banner">
+      ✨ You are invited! Click here to View ✨
+    </div>
+  </div>
+
+  <!-- Animated Invitation Card (Revealed on click) -->
+  <div class="card-container" id="invitation-card">
+    <div class="card">
+      <img src="https://i.imgur.com/PJROj9R.jpg" alt="Mercy and Anand Baby Shower Invitation">
+    </div>
+
+    <!-- Google Maps Exact Location Link -->
+    <a href="https://maps.app.goo.gl/fU8AsgGFy9ZFWq8q7" target="_blank" class="maps-link">
+      📍 View Location on Google Maps
+    </a>
+  </div>
+
+  <script>
+    let activeFireworks = false;
+
+    function openInvitation() {
+      const banner = document.getElementById('banner-container');
+      const card = document.getElementById('invitation-card');
+      const canvas = document.getElementById('fireworks');
+
+      // Hide the banner
+      banner.classList.add('active');
+
+      // Start fireworks
+      canvas.classList.add('active');
+      activeFireworks = true;
+
+      // Reveal invitation card
+      setTimeout(() => {
+        card.classList.add('reveal');
+      }, 200);
+    }
+
+    // Fireworks Code
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.radius = Math.random() * 3 + 1;
+        this.velocity = {
+          x: (Math.random() - 0.5) * 6,
+          y: (Math.random() - 0.5) * 6
+        };
+        this.alpha = 1;
+        this.decay = Math.random() * 0.015 + 0.005;
+      }
+
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      update() {
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+        this.alpha -= this.decay;
+      }
+    }
+
+    let particles = [];
+    const colors = ['#ff85a1', '#7dd3fc', '#fef08a', '#b9fbc0', '#e0aaff'];
+
+    function createFirework() {
+      if (!activeFireworks) return;
+
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * (canvas.height * 0.6);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      for (let i = 0; i < 40; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    }
+
+    setInterval(createFirework, 600);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((particle, index) => {
+        if (particle.alpha > 0) {
+          particle.update();
+          particle.draw();
+        } else {
+          particles.splice(index, 1);
+        }
+      });
+    }
+
+    animate();
+  </script>
+
+</body>
+</html>
